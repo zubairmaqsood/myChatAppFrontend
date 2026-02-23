@@ -1,0 +1,13 @@
+.chat-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* The Hover Effect */
+.chat-item:hover {
+    background-color: #eaebed;
+}
+
+.chat-item.active-chat {
+    background-color: #eaebed;
+}

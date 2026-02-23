@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import './App.css'
-
+import { createBrowserRouter,RouterProvider } from 'react-router' 
+import Dashboard from './component/Dashboard'
 function App() {
 
+  const router = createBrowserRouter([
+    {
+      path:'/',
+      element:<Dashboard/>
+    }
+  ])
   return (
-   <div>
-    
-   </div>
+   <RouterProvider router={router} />
   )
 }
 

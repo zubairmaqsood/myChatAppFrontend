@@ -1,0 +1,55 @@
+.profilePic{
+    width: 50px;
+    height: 50px; 
+    cursor: pointer;
+}
+
+.textArea{
+    resize: none;
+    max-height: 150px; 
+    overflow-y: auto;
+}
+
+@keyframes slideUpFade{
+    from{
+        opacity: 0;
+        transform: translateY(30px) ;
+    }
+    to{
+        opacity:1;
+        transform: translateY(0);
+    }
+}
+
+.message-slide{
+    animation: slideUpFade 0.4s ease-out forwards;
+}
+
+.message{
+    color: #000;
+    max-width: 75%;
+    word-wrap: break-word;
+    padding: 10px;
+}
+
+.chat-send{
+    background-color: #dcf8c6;
+    border-radius: 18px 0px 18px 18px;
+}
+
+.chat-recieved{
+    background-color: #eeeff0;
+    border-radius: 0px 18px 18px 18px;
+}
+
+.dpPreviewContainer{
+    background-color: rgba(0,0,0,0.8);
+    z-index: 1050;
+    cursor: pointer
+}
+
+.dpPreview{
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+}
