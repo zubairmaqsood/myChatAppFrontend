@@ -53,11 +53,12 @@ function ChatScreen({selectedUser,setSelectedUser}) {
             {/* Image Section */}
             <div className="position-relative me-3">
                 <img
-                src="city-night-drive-stockcake.jpg"
-                alt="userpic"
-                className="rounded-circle object-fit-cover profilePic"
-                //i need to check whether profile pic is uploaded or not if not then don't show preview
-                onClick={()=>setIsPreviewOpen(true)}
+                    src="city-night-drive-stockcake.jpg"
+                    alt="userpic"
+                    className="rounded-circle object-fit-cover profilePic"
+                    //i need to check whether profile pic is uploaded or not if not then don't show preview
+                    onClick={()=>setIsPreviewOpen(true)}
+                    onError={(e) => (e.target.src = "/default.webp")}
                 />
                 <span className="position-absolute bottom-0 end-0 p-2 bg-secondary bg-success border border-2 border-white rounded-circle"></span>
             </div>

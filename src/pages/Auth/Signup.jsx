@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import "./Auth.css"
 import axios from 'axios';
 
 function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
@@ -15,8 +17,8 @@ function Signup() {
       const response = await axios.post('/api/users/signup', data);
       
       console.log("Signup successful:", response.data);
-      // Redirect to login after successful signup
-      navigate('/login'); 
+      
+      navigate('/'); 
     } catch (err) {
       setApiError(err.response?.data?.message || "Something went wrong during signup.");
     }
@@ -52,11 +54,14 @@ function Signup() {
 
           <div className="mb-4">
             <label className="form-label">Password</label>
-            <input 
-              type="password" 
+            <div className='passwordContainer'>
+              <input 
+              type={showPassword?"text":"password"}
               className={`form-control ${errors.password ? 'is-invalid' : ''}`}
               {...register("password", { required: "Password is required", minLength: { value: 6, message: "Min 6 characters" } })} 
             />
+              <span className='passwordIcon' onClick={()=>setShowPassword(show=>!show)}><i className="bi bi-eye"></i></span>
+            </div>
             {errors.password && <small className="text-danger">{errors.password.message}</small>}
           </div>
 

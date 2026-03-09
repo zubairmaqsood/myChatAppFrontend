@@ -1,6 +1,11 @@
-import React from "react";
+import { useNavigate } from "react-router";
 
 function Sidebar({ chats, isLoading, selectedUser, setSelectedUser, searchInput, setSearchInput }) {
+  const navigate = useNavigate()
+  const handleLogout = ()=>{
+    localStorage.removeItem("token")
+    navigate("/login")
+  }
   return (
     <div className="d-flex flex-column h-100">
       {/* Header */}
@@ -25,7 +30,7 @@ function Sidebar({ chats, isLoading, selectedUser, setSelectedUser, searchInput,
             </li>
 
             <li>
-              <button className="dropdown-item text-danger">
+              <button className="dropdown-item text-danger" onClick={handleLogout}>
                 <i className="bi bi-box-arrow-right me-2"></i>
                 Logout
               </button>

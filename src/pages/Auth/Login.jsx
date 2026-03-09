@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import "./Auth.css"
 import api from '../../services/api';
 
 function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
@@ -18,7 +20,7 @@ function Login() {
       localStorage.setItem("token", response.data.token);
       
       // Redirect to your Chat Dashboard
-      navigate('/dashboard'); 
+      navigate('/'); 
     } catch (err) {
       setApiError(err.response?.data?.message );
     }
@@ -44,11 +46,14 @@ function Login() {
 
           <div className="mb-4">
             <label className="form-label">Password</label>
+            <div className='passwordContainer'>
             <input 
-              type="password" 
+              type={showPassword?"text":"password"}
               className={`form-control ${errors.password ? 'is-invalid' : ''}`}
               {...register("password", { required: "Password is required" })} 
             />
+            <span className='passwordIcon' onClick={()=>setShowPassword(show=>!show)}><i className="bi bi-eye"></i></span>
+            </div>
             {errors.password && <small className="text-danger">{errors.password.message}</small>}
           </div>
 
