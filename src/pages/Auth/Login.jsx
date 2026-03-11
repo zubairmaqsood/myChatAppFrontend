@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../../Redux/slices/authSlice';
 import "./Auth.css"
 import api from '../../services/api';
 
 function Login() {
+  const dispatch = useDispatch()
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
   const [showPassword, setShowPassword] = useState(false)
@@ -18,7 +21,7 @@ function Login() {
       
       // Save the JWT token to localStorage so the user stays logged in
       localStorage.setItem("token", response.data.token);
-      
+      dispatch(setUser(response.data.user))
       // Redirect to your Chat Dashboard
       navigate('/'); 
     } catch (err) {

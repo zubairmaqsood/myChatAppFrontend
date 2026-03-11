@@ -1,29 +1,34 @@
 import { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useDispatch, useSelector } from "react-redux";
+import { setChats } from "../../Redux/slices/chatSlice";
 import getChats from "../../services/chatService";
 import ChatScreen from "../../component/ChatScreen/ChatScreen";
 import Sidebar from "../../component/Sidebar/Sidebar";
 
 function Dashboard() {
-  const [selectedUser, setSelectedUser] = useState(null);
   const [searchInput, setSearchInput] = useState("");
-  const [chats, setChats] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const selectedUserId = useSelector((state)=>state.chat.selectedUser?.id) // id for currently selected user to chat
+  const dispatch = useDispatch()
 
   const debouncedSearch = useDebounce(searchInput, 500);
 
   useEffect(() => {
     const fetchChats = async () => {
-      const response = await getChats();
-      if (response.message) {
-        setError(response.message);
-        setIsLoading(false);
-        return;
+      try{
+        const response = await getChats();
+        dispatch(setChats(response));
+      }catch(err){
+        console.error(err)
+        setError(err.message)
       }
-      setChats(response);
-      setIsLoading(false);
+      finally{
+        setIsLoading(false)
+      }
     };
     fetchChats();
   }, []);
@@ -52,32 +57,34 @@ function Dashboard() {
       </div>
     );
   }
+  
   return (
     <div className="container-fluid vh-100">
       <div className="row">
         {/* Sidebar */}
         <div
-          className={`col-md-4 bg-light vh-100 overflow-auto border-end p-0 ${selectedUser ? "d-none d-md-block" : "d-block"}`}
+          className={`col-md-4 bg-light vh-100 overflow-auto border-end p-0 ${selectedUserId ? "d-none d-md-block" : "d-block"}`}
         >
          <Sidebar
-         chats={chats}
             isLoading={isLoading}
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
             searchInput={searchInput}
             setSearchInput={setSearchInput}
          />
         </div>
 
         {/* Chat Area */}
-        <div
-          className={`col-md-8 vh-100 border-end p-0 ${selectedUser ? "d-block" : "d-none d-md-block"}`}
-        >
-          <ChatScreen
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
-          />
-        </div>
+          <div
+            className={`col-md-8 vh-100 border-end p-0 ${selectedUserId ? "d-block" : "d-none d-md-block"}`}
+          >
+          {
+            selectedUserId?(
+            <ChatScreen/>
+          ):(
+            <div className="d-flex justify-content-center align-items-center h-100 text-muted">
+              <h4>Select a friend to start chatting</h4>
+            </div>
+          )}
+          </div>
       </div>
     </div>
   );

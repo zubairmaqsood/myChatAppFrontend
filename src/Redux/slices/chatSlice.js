@@ -4,7 +4,7 @@ export const chatSlice = createSlice({
     name:"chat",
     initialState:{
         chats:[], // chats in sidebar
-        selectedUserId:null, // id of user which is currently selected to talk
+        selectedUser:null, // id of user which is currently selected to talk
         onlineUsers:[] // for green dots on users
     },
     reducers:{
@@ -23,9 +23,9 @@ export const chatSlice = createSlice({
             state.onlineUsers = action.payload; // Overwrites everything
         },
 
-        // for selected user whose chat is currently open
+        // for selecting specific user's chat or close in mobile
         setSelectedUser: (state, action) => {
-            state.selectedUserId = action.payload;
+            state.selectedUser = action.payload;
         },
 
         // --- FOR REAL-TIME SOCKET EVENTS ---
@@ -59,6 +59,13 @@ export const chatSlice = createSlice({
             existingChat.lastMessage = lastMessage;
             existingChat.lastMessageTime = lastMessageTime;
             }
+        },
+
+        // for clearing all data after logout
+        clearChatState: (state) => {
+            state.selectedUser = null;
+            state.chats = [];
+            state.chatCache = {}; // Don't forget to clear the message cache too!
         }
     }
 })

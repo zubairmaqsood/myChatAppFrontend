@@ -14,6 +14,11 @@ const authSlice = createSlice({
         // when user logout so remove its data
         logout:(state)=>{
             state.user = null
+        },
+
+        // setting profile pic 
+        setProfilePic:(state,action)=>{
+            
         }
     }
 })

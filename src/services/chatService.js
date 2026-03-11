@@ -5,7 +5,9 @@ const getChats = async()=>{
         const response = await api.get("messages/chats")
         return response.data
     }catch(err){
-        return err?.response.data
+        const errorMessage =  err?.response.data.message || "Something went wrong";
+        
+        throw new Error(errorMessage);
     }
 }
 

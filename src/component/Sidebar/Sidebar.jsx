@@ -1,11 +1,23 @@
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { setSelectedUser } from "../../Redux/slices/chatSlice";
 
-function Sidebar({ chats, isLoading, selectedUser, setSelectedUser, searchInput, setSearchInput }) {
+
+function Sidebar({ isLoading, searchInput, setSearchInput }) {
+
+  const chats = useSelector((state)=>state.chat.chats)
+  const selectedUserId = useSelector((state)=>state.chat.selectedUser?.id)
+  const dispatch = useDispatch()  
+
   const navigate = useNavigate()
+
+  // to logout user
   const handleLogout = ()=>{
     localStorage.removeItem("token")
+    dispatch({type:"LOGOUT"})
     navigate("/login")
   }
+
   return (
     <div className="d-flex flex-column h-100">
       {/* Header */}
@@ -74,8 +86,12 @@ function Sidebar({ chats, isLoading, selectedUser, setSelectedUser, searchInput,
           chats.map((chat) => (
             <div
               key={chat._id}
-              className={`d-flex align-items-center chat-item ${selectedUser === chat._id ? "active-chat" : ""}`}
-              onClick={() => setSelectedUser(chat._id)}
+              className={`d-flex align-items-center chat-item ${selectedUserId === chat._id ? "active-chat" : ""}`}
+              onClick={() => dispatch(setSelectedUser({
+                id: chat._id,
+                name: chat.name,
+                profilePic: chat.profilePic
+            }))}
             >
               {/* Image Section */}
               <div className="position-relative me-3">
