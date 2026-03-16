@@ -17,3 +17,12 @@
     height: 50px; 
     cursor: pointer;
 }
+
+.chatTitles{
+    font-size: 0.85rem;
+    font-weight:bold
+}
+
+.otherUserChatPreview{
+    font-size: 0.85rem
+}

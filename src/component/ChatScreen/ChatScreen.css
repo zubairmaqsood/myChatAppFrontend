@@ -26,6 +26,11 @@
     padding: 10px;
 }
 
+.messageDate{
+    font-size: 0.7rem;
+    opacity: 0.8
+}
+
 .chat-send{
     background-color: #dcf8c6;
     border-radius: 18px 0px 18px 18px;

@@ -1,0 +1,26 @@
+.headerSection{
+    background-color: #008069;
+    height: 50px;
+    padding-top: auto
+}
+
+.profilePicContainer{
+    width: 200px;
+    height: 200px;
+    cursor: pointer
+}
+
+.imgIconContainer{
+    background-color: rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: opacity 0.2s
+}
+
+.iconText{
+    font-size: 0.8rem;
+    text-transform: uppercase 
+}
+
+.nameText{
+    font-weight: bold;
+}

@@ -18,10 +18,13 @@ const authSlice = createSlice({
 
         // setting profile pic 
         setProfilePic:(state,action)=>{
-            
+            if (state.user) {
+                state.user.profilePic = action.payload;
+            }
+
         }
     }
 })
 
-export const {setUser,logout} = authSlice.actions
+export const {setUser,logout,setProfilePic} = authSlice.actions
 export default authSlice.reducer

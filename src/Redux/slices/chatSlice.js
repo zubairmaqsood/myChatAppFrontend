@@ -1,4 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getUserById } from "../../services/userService";
+import { addMessage } from "./messageSlice";
 
 export const chatSlice = createSlice({
     name:"chat",
@@ -48,27 +50,90 @@ export const chatSlice = createSlice({
 
         // 3. When a new message arrives and you need to update the sidebar preview text
         updateChatPreview: (state, action) => {
-            const { chatId, lastMessage, lastMessageTime } = action.payload;
+            const { chatId, name,profilePic,lastMessage, lastMessageTime } = action.payload;
             
             // Find the exact chat in the sidebar array
-            const existingChat = state.chats.find(chat => chat._id === chatId);
+            const index = state.chats.findIndex(chat => chat._id === chatId);
             
-            if (existingChat) {
+            if (index!==-1) {
+                const [chat] = state.chats.splice(index,1)
             // Immer lets us mutate these specific properties directly!
             // React will ONLY re-render this specific chat item in the Sidebar.
-            existingChat.lastMessage = lastMessage;
-            existingChat.lastMessageTime = lastMessageTime;
-            }
+                chat.lastMessage = lastMessage;
+                chat.lastMessageTime = lastMessageTime;
+                state.chats.unshift(chat)
+            }else {
+            // 2. BRAND NEW CHAT: Create it and put it at the top of the list!
+            state.chats.unshift({
+                _id: chatId,
+                name: name,
+                profilePic: profilePic,
+                lastMessage: lastMessage,
+                lastMessageTime: lastMessageTime
+            });
+        }
         },
 
-        // for clearing all data after logout
-        clearChatState: (state) => {
-            state.selectedUser = null;
-            state.chats = [];
-            state.chatCache = {}; // Don't forget to clear the message cache too!
-        }
+        removeChat: (state, action) => {
+            const chatId = action.payload;
+            
+             const index = state.chats.findIndex(chat => chat._id === chatId);
+            
+            if (index!==-1) {
+                state.chats.splice(index,1)
+                // 2. If you are currently looking at their chat, close the screen!
+                if (state.selectedUser?.id === chatId) {
+                    state.selectedUser = null;
+                }
+            }
+    },
     }
 })
 
-export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview} = chatSlice.actions
+export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview,addChat,removeChat} = chatSlice.actions
 export default chatSlice.reducer
+
+export const handleIncomingMessage = (data) => async (dispatch, getState) => {
+    // 1. Add the message to the chat screen
+    dispatch(
+        addMessage({
+            chatId: data.from,
+            message: {
+                _id: data._id,
+                fromSelf: false,
+                message: data.text,
+                time: data.time
+            },
+        })
+    );
+
+    // 2. getState() NEVER goes stale! It looks at the live Redux store.
+    const state = getState();
+    const existingChat = state.chat.chats.find(c => c._id === data.from);
+
+    if (existingChat) {
+        // SCENARIO A: You already know them. Just bump the preview!
+        dispatch(updateChatPreview({
+            chatId: data.from, 
+            lastMessage: data.text, 
+            lastMessageTime: data.time
+        }));
+    } else {
+        // SCENARIO B: Brand new person! 
+        try {
+            const response = await getUserById(data.from);
+            const newUserData = response.user; 
+
+            dispatch(addChat({
+                _id: newUserData._id,
+                name: newUserData.name,
+                profilePic: newUserData.profilePic,
+                lastMessage: data.text,
+                lastMessageTime: data.time
+            }));
+        } catch (error) {
+
+            console.error("Failed to fetch new user data for sidebar", error);
+        }
+    }
+};

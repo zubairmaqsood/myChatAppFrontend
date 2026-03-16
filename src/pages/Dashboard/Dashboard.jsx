@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import "./Dashboard.css";
 import { useDebounce } from "../../hooks/useDebounce";
-import { useDispatch, useSelector } from "react-redux";
 import { setChats } from "../../Redux/slices/chatSlice";
+import { useDispatch, useSelector } from "react-redux";
 import getChats from "../../services/chatService";
+import { searchUsers } from "../../services/userService";
 import ChatScreen from "../../component/ChatScreen/ChatScreen";
 import Sidebar from "../../component/Sidebar/Sidebar";
 
@@ -12,33 +12,54 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const selectedUserId = useSelector((state)=>state.chat.selectedUser?.id) // id for currently selected user to chat
-  const dispatch = useDispatch()
+  // id for currently selected user to chat
+  const selectedUserId = useSelector((state) => state.chat.selectedUser?.id);
+  const [searchedUsers, setSearchedUsers] = useState([]);
+
+  const dispatch = useDispatch();
 
   const debouncedSearch = useDebounce(searchInput, 500);
+  // 1. Add this state at the top
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+
+  // 2. Add this variable to prevent UI flashing during the 500ms delay!
+  const isSearching = isSearchLoading || (searchInput !== debouncedSearch);
 
   useEffect(() => {
     const fetchChats = async () => {
-      try{
+      try {
         const response = await getChats();
         dispatch(setChats(response));
-      }catch(err){
-        console.error(err)
-        setError(err.message)
-      }
-      finally{
-        setIsLoading(false)
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchChats();
   }, []);
 
   // This useEffect ONLY runs when the user STOPS typing for 500ms
-  useEffect(() => {
-    if (debouncedSearch) {
-      console.log("Making API call for:", debouncedSearch);
-      // Run your actual filter or search logic here!
+  useEffect(() => { 
+    const fetchSearchedUsers = async()=>{
+      if (debouncedSearch) {
+        try {
+          setIsSearchLoading(true)
+          const response = await searchUsers(debouncedSearch)
+          setSearchedUsers(response.users); 
+        } catch (err) {
+          console.error("Failed to search users", err);
+        }finally {
+          setIsSearchLoading(false); // <-- Stop loading
+        }
+      }else {
+        // If search is empty, clear the "Other Users" list
+        setSearchedUsers([]);
+      }
     }
+
+    fetchSearchedUsers()
   }, [debouncedSearch]);
 
   if (error) {
@@ -57,7 +78,7 @@ function Dashboard() {
       </div>
     );
   }
-  
+
   return (
     <div className="container-fluid vh-100">
       <div className="row">
@@ -65,26 +86,27 @@ function Dashboard() {
         <div
           className={`col-md-4 bg-light vh-100 overflow-auto border-end p-0 ${selectedUserId ? "d-none d-md-block" : "d-block"}`}
         >
-         <Sidebar
+          <Sidebar
             isLoading={isLoading}
             searchInput={searchInput}
             setSearchInput={setSearchInput}
-         />
+            searchedUsers={searchedUsers}
+            isSearching={isSearching}
+          />
         </div>
 
         {/* Chat Area */}
-          <div
-            className={`col-md-8 vh-100 border-end p-0 ${selectedUserId ? "d-block" : "d-none d-md-block"}`}
-          >
-          {
-            selectedUserId?(
-            <ChatScreen/>
-          ):(
+        <div
+          className={`col-md-8 vh-100 border-end p-0 ${selectedUserId ? "d-block" : "d-none d-md-block"}`}
+        >
+          {selectedUserId ? (
+            <ChatScreen setSearchInput={setSearchInput}/>
+          ) : (
             <div className="d-flex justify-content-center align-items-center h-100 text-muted">
               <h4>Select a friend to start chatting</h4>
             </div>
           )}
-          </div>
+        </div>
       </div>
     </div>
   );

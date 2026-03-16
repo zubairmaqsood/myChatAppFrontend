@@ -31,7 +31,7 @@ function Login() {
 
   return (
     <div className="vh-100 d-flex justify-content-center align-items-center bg-light">
-      <div className="card shadow p-4" style={{ width: "400px" }}>
+      <div className="card shadow p-4 loginCard">
         <h3 className="text-center mb-4">Welcome Back</h3>
 
         {apiError && <div className="alert alert-danger p-2 text-center">{apiError}</div>}
