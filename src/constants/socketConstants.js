@@ -4,3 +4,5 @@ export const RECIEVE_MESSAGE_EVENT = "recieve-message"
 export const NEW_ONLINE_EVENT = "new-online";
 export const NEW_OFFLINE_EVENT = "new-offline";
 export const ONLINE_USERS_EVENT = "online-users";
+export const UPDATE_PROFILE = "profile-updated";
+export const FRIEND_UPDATE_PROFILE = "friend-profile-updated";

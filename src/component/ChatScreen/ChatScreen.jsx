@@ -205,7 +205,7 @@ function ChatScreen({setSearchInput}) {
             <img
               src={
                 selectedUser?.profilePic
-                  ? `http://localhost:3000/uploads/${selectedUser.profilePic}`
+                  ? `http://localhost:3000/uploads/profilePics/${selectedUser.profilePic}`
                   : "/default.webp"
               }
               alt="userpic"
@@ -305,7 +305,7 @@ function ChatScreen({setSearchInput}) {
         >
           {/* The large preview image */}
           <img
-            src={`http://localhost:3000/uploads/${selectedUser.profilePic}`}
+            src={`http://localhost:3000/uploads/profilePics/${selectedUser.profilePic}`}
             alt="dp-large"
             className="rounded-circle shadow-lg dpPreview"
             // Prevent clicking the image from closing the overlay (optional, but good practice)

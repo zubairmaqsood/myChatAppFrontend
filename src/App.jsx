@@ -10,10 +10,11 @@ import {
   ONLINE_USERS_EVENT,
   NEW_ONLINE_EVENT,
   RECIEVE_MESSAGE_EVENT,
-  NEW_OFFLINE_EVENT
+  NEW_OFFLINE_EVENT,
+  FRIEND_UPDATE_PROFILE
 } from "./constants/socketConstants";
 import { useDispatch,useSelector } from 'react-redux'
-import {setOnlineUsers,addOnlineUser,removeOnlineUser,handleIncomingMessage} from "./Redux/slices/chatSlice";
+import {setOnlineUsers,addOnlineUser,removeOnlineUser,handleIncomingMessage,updateChatUserInfo} from "./Redux/slices/chatSlice";
 
 import { setUser } from './Redux/slices/authSlice'
 import { getProfile } from './services/userService'
@@ -41,7 +42,7 @@ function App() {
         dispatch(setUser(response));
       } catch (err) {
         // If token is expired or invalid, clear it
-        console.error("Session expired");
+        console.error("Error occured",err);
         localStorage.removeItem("token");
       } finally {
         setIsCheckingAuth(false);
@@ -80,6 +81,11 @@ function App() {
       dispatch(handleIncomingMessage(data));
     });
 
+    // to show if other user have updated its profile data
+    socket.on(FRIEND_UPDATE_PROFILE, (userData) => {
+      dispatch(updateChatUserInfo(userData));
+    });
+
     // Listen for a user going OFFLINE (Backend sent SELF_OFFLINE_EVENT)
     socket.on(NEW_OFFLINE_EVENT, (userId) => {
       // This removes the user's ID from the Redux array, instantly turning their green dot gray!
@@ -92,6 +98,7 @@ function App() {
         socket.off(NEW_ONLINE_EVENT);
         socket.off(RECIEVE_MESSAGE_EVENT);
         socket.off(NEW_OFFLINE_EVENT);
+        socket.off(FRIEND_UPDATE_PROFILE);
       };
   }, [loggedInUserId, dispatch]);
 

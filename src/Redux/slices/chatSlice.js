@@ -5,7 +5,7 @@ import { addMessage } from "./messageSlice";
 export const chatSlice = createSlice({
     name:"chat",
     initialState:{
-        chats:[], // chats in sidebar
+        chats:[], // chats in sidebar example data: {_id:123,name:"adnan",profilePic:"abc.png",lastMessage:"hello",lastMessageTime:any Date in iso string}
         selectedUser:null, // id of user which is currently selected to talk
         onlineUsers:[] // for green dots on users
     },
@@ -57,21 +57,21 @@ export const chatSlice = createSlice({
             
             if (index!==-1) {
                 const [chat] = state.chats.splice(index,1)
-            // Immer lets us mutate these specific properties directly!
-            // React will ONLY re-render this specific chat item in the Sidebar.
+                // Immer lets us mutate these specific properties directly!
+                // React will ONLY re-render this specific chat item in the Sidebar.
                 chat.lastMessage = lastMessage;
                 chat.lastMessageTime = lastMessageTime;
                 state.chats.unshift(chat)
             }else {
             // 2. BRAND NEW CHAT: Create it and put it at the top of the list!
-            state.chats.unshift({
-                _id: chatId,
-                name: name,
-                profilePic: profilePic,
-                lastMessage: lastMessage,
-                lastMessageTime: lastMessageTime
-            });
-        }
+                state.chats.unshift({
+                    _id: chatId,
+                    name: name,
+                    profilePic: profilePic,
+                    lastMessage: lastMessage,
+                    lastMessageTime: lastMessageTime
+                });
+            }
         },
 
         removeChat: (state, action) => {
@@ -86,11 +86,29 @@ export const chatSlice = createSlice({
                     state.selectedUser = null;
                 }
             }
-    },
+        },
+
+        // this is for if other user update its profile data then to show on our sidebar chats
+        updateChatUserInfo: (state, action) => {
+            const { _id, name, profilePic } = action.payload;
+            
+            // 1. Update the Sidebar list if they are in it
+            const chatIndex = state.chats.findIndex(chat => chat._id === _id);
+            if (chatIndex !== -1) {
+                state.chats[chatIndex].name = name;
+                state.chats[chatIndex].profilePic = profilePic;
+            }
+
+            // 2. Update the Chat Screen Header if you are currently talking to them!
+            if (state.selectedUser?.id === _id) {
+                state.selectedUser.name = name;
+                state.selectedUser.profilePic = profilePic;
+            }
+        },
     }
 })
 
-export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview,addChat,removeChat} = chatSlice.actions
+export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview,addChat,removeChat,updateChatUserInfo} = chatSlice.actions
 export default chatSlice.reducer
 
 export const handleIncomingMessage = (data) => async (dispatch, getState) => {

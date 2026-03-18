@@ -52,3 +52,15 @@ export const uploadProfilePic= async (formData) => {
         throw new Error(errMessage);
     }
 };
+
+// for removing profile pic 
+export const removeProfilePicApi = async () => {
+    try {
+        // We just send the flag as a standard JSON body!
+        const response = await api.patch("/users/updateProfile", { removeProfilePic: true });
+        return response.data;
+    } catch (error) {
+        const errMessage = error?.response?.data?.message || "Failed to remove dp";
+        throw new Error(errMessage);
+    }
+};

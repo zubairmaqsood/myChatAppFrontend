@@ -24,3 +24,16 @@
 .nameText{
     font-weight: bold;
 }
+
+.removePicBtn{
+    bottom: 5px;
+    right: 5px; 
+    z-index: 10;
+    width: 40px;
+    height: 40px
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
