@@ -12,6 +12,11 @@ function Profile({ onClose }) {
   const fileInputRef = useRef(null);
   
   const [isUploading, setIsUploading] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ show: false, type: "alert", message: "", action: null });
+
+  const closeModal = () => setModalConfig({ show: false, type: "alert", message: "", action: null });
+  const showAlert = (message) => setModalConfig({ show: true, type: "alert", message, action: null });
+  const showConfirm = (message, action) => setModalConfig({ show: true, type: "confirm", message, action });
 
   // for editing name
   const [isEditingName, setIsEditingName] = useState(false);
@@ -88,19 +93,19 @@ function Profile({ onClose }) {
   const handleRemoveImage = async (e) => {
     e.stopPropagation(); // CRITICAL: Stops the file uploader from opening when you click trash!
     
-    const confirmDelete = window.confirm("Are you sure you want to remove your profile photo?");
-    if (!confirmDelete) return;
+    showConfirm("Are you sure you want to remove your profile photo?", executeRemoveImage);
+  };
 
+  const executeRemoveImage = async () => {
+    closeModal();
     try {
       setIsUploading(true);
       const response = await removeProfilePicApi();
-      
-      // Instantly clear the image across the entire app!
       dispatch(setProfilePic(null)); 
-      socket.emit(UPDATE_PROFILE, response.user)
+      socket.emit(UPDATE_PROFILE, response.user);
     } catch (err) {
       console.error("Failed to remove image", err);
-      alert("Failed to remove image. Please try again.");
+      showAlert("Failed to remove image. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -224,6 +229,25 @@ function Profile({ onClose }) {
         )}
       </div>
 
+      {/* Custom Bootstrap Modal Overlay */}
+      {modalConfig.show && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+          <div className="bg-white rounded-3 shadow p-4 confirmModal">
+            <h6 className="mb-3">{modalConfig.type === "confirm" ? "Confirm Action" : "Notice"}</h6>
+            <p className="text-muted mb-4">{modalConfig.message}</p>
+            <div className="d-flex justify-content-end gap-2">
+              <button className="btn btn-light" onClick={closeModal}>
+                {modalConfig.type === "confirm" ? "Cancel" : "OK"}
+              </button>
+              {modalConfig.type === "confirm" && (
+                <button className="btn btn-danger" onClick={modalConfig.action}>
+                  Confirm
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

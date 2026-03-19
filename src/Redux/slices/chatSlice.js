@@ -5,7 +5,7 @@ import { addMessage } from "./messageSlice";
 export const chatSlice = createSlice({
     name:"chat",
     initialState:{
-        chats:[], // chats in sidebar example data: {_id:123,name:"adnan",profilePic:"abc.png",lastMessage:"hello",lastMessageTime:any Date in iso string}
+        chats:[], // chats in sidebar example data: {_id:123,name:"adnan",profilePic:"abc.png",lastMessage:"hello",lastMessageTime:any Date in iso string,isUnread:true}
         selectedUser:null, // id of user which is currently selected to talk
         onlineUsers:[] // for green dots on users
     },
@@ -50,7 +50,7 @@ export const chatSlice = createSlice({
 
         // 3. When a new message arrives and you need to update the sidebar preview text
         updateChatPreview: (state, action) => {
-            const { chatId, name,profilePic,lastMessage, lastMessageTime } = action.payload;
+            const { chatId, name,profilePic,lastMessage, lastMessageTime ,isUnread} = action.payload;
             
             // Find the exact chat in the sidebar array
             const index = state.chats.findIndex(chat => chat._id === chatId);
@@ -61,6 +61,9 @@ export const chatSlice = createSlice({
                 // React will ONLY re-render this specific chat item in the Sidebar.
                 chat.lastMessage = lastMessage;
                 chat.lastMessageTime = lastMessageTime;
+                if(isUnread){
+                    chat.unreadCount = (chat.unreadCount || 0) + 1
+                }
                 state.chats.unshift(chat)
             }else {
             // 2. BRAND NEW CHAT: Create it and put it at the top of the list!
@@ -69,8 +72,18 @@ export const chatSlice = createSlice({
                     name: name,
                     profilePic: profilePic,
                     lastMessage: lastMessage,
-                    lastMessageTime: lastMessageTime
+                    lastMessageTime: lastMessageTime,
+                    unreadCount : isUnread? 1 : 0 
                 });
+            }
+        },
+
+        // for clearing message count from sidbar view
+        clearUnreadCount: (state, action) => {
+            const chatId = action.payload;
+            const chat = state.chats.find(c => c._id === chatId);
+            if (chat) {
+                chat.unreadCount = 0;
             }
         },
 
@@ -108,7 +121,7 @@ export const chatSlice = createSlice({
     }
 })
 
-export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview,addChat,removeChat,updateChatUserInfo} = chatSlice.actions
+export const {setChats,setOnlineUsers,setSelectedUser,addOnlineUser,removeOnlineUser,updateChatPreview,addChat,removeChat,updateChatUserInfo,clearUnreadCount} = chatSlice.actions
 export default chatSlice.reducer
 
 export const handleIncomingMessage = (data) => async (dispatch, getState) => {
@@ -134,7 +147,8 @@ export const handleIncomingMessage = (data) => async (dispatch, getState) => {
         dispatch(updateChatPreview({
             chatId: data.from, 
             lastMessage: data.text, 
-            lastMessageTime: data.time
+            lastMessageTime: data.time,
+            isUnread: state.chat.selectedUser?.id !== data.from
         }));
     } else {
         // SCENARIO B: Brand new person! 
@@ -147,7 +161,8 @@ export const handleIncomingMessage = (data) => async (dispatch, getState) => {
                 name: newUserData.name,
                 profilePic: newUserData.profilePic,
                 lastMessage: data.text,
-                lastMessageTime: data.time
+                lastMessageTime: data.time,
+                unreadCount: state.chat.selectedUser?.id !== data.from?1:0
             }));
         } catch (error) {
 

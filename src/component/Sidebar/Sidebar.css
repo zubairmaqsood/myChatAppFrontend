@@ -12,11 +12,6 @@
     background-color: #eaebed;
 }
 
-.profilePic{
-    width: 50px;
-    height: 50px; 
-    cursor: pointer;
-}
 
 .chatTitles{
     font-size: 0.85rem;

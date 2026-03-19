@@ -1,22 +1,27 @@
 import  { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import "./Auth.css"
-import axios from 'axios';
-
+import { setUser } from '../../Redux/slices/authSlice';
+import { signup } from '../../services/authService';
 function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
+  const dispatch = useDispatch()
+
   const onSubmit = async (data) => {
     try {
       setApiError(null);
       // Calls your Express backend
-      const response = await axios.post('/api/users/signup', data);
+      const response = await signup(data)
       
-      console.log("Signup successful:", response.data);
+      // Save the JWT token to localStorage so the user stays logged in
+      localStorage.setItem("token", response.token);
+      dispatch(setUser(response.user))
       
       navigate('/'); 
     } catch (err) {

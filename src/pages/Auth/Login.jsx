@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../Redux/slices/authSlice';
 import "./Auth.css"
-import api from '../../services/api';
+import { login } from '../../services/authService';
 
 function Login() {
   const dispatch = useDispatch()
@@ -17,15 +17,15 @@ function Login() {
     try {
       setApiError(null);
       // Calls your Express backend
-      const response = await api.post('/users/login', data);
+      const response = await login(data);
       
       // Save the JWT token to localStorage so the user stays logged in
-      localStorage.setItem("token", response.data.token);
-      dispatch(setUser(response.data.user))
+      localStorage.setItem("token", response.token);
+      dispatch(setUser(response.user))
       // Redirect to your Chat Dashboard
       navigate('/'); 
     } catch (err) {
-      setApiError(err.response?.data?.message );
+      setApiError(err);
     }
   };
 

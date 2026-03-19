@@ -32,15 +32,14 @@ export const messageSlice = createSlice({
             }
        },
         // when new message comes
-        addMessage : (state,action)=>{
+       addMessage : (state,action)=>{
             const { chatId, message } = action.payload;
-            // check if already talk to this person if not then create an array for this user's messages
-            if (!state.chatCache[chatId]) {
-                state.chatCache[chatId] = []
+            
+            // ONLY push the message if we have ALREADY fetched their history!
+            // Do NOT create an empty array.
+            if (state.chatCache[chatId]) {
+                state.chatCache[chatId].push(message);
             }
-
-            state.chatCache[chatId].push(message)
-
         },
 
         // for deletion of whole chat

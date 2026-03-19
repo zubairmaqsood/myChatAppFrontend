@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { socket } from "../../Sockets/socket";
-import { setSelectedUser } from "../../Redux/slices/chatSlice";
+import { setSelectedUser,clearUnreadCount } from "../../Redux/slices/chatSlice";
 import Profile from "../Profile/Profile";
 
 
@@ -134,18 +134,31 @@ function Sidebar({ isLoading, searchInput, setSearchInput,searchedUsers,isSearch
                       <div
                         key={chat._id}
                         className={`d-flex align-items-center chat-item mb-3 ${selectedUserId === chat._id ? "active-chat" : ""}`}
-                        onClick={() => dispatch(setSelectedUser({ id: chat._id, name: chat.name, profilePic: chat.profilePic }))}
+                        onClick={() => { 
+                          dispatch(setSelectedUser({ id: chat._id, name: chat.name, profilePic: chat.profilePic,unreadCount: chat.unreadCount })) 
+                          dispatch(clearUnreadCount(chat._id))
+                        }}
                       >
                         <div className="position-relative me-3">
                           <img src={chat.profilePic ? `http://localhost:3000/uploads/profilePics/${chat.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />
                           {isOnline && <span className="position-absolute bottom-0 end-0 p-2 bg-secondary bg-success border border-2 border-white rounded-circle"></span>}
                         </div>
-                        <div className="d-flex flex-column flex-grow-1 overflow-hidden">
-                          <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex flex-grow-1 justify-content-between overflow-hidden">
+
+                          <div className="d-flex flex-column overflow-hidden pe-2">
                             <h6 className="m-0 text-truncate pe-2">{chat.name}</h6>
-                            <small className="text-muted text-nowrap">{displayTime}</small>
+                            <p className="m-0 text-muted text-truncate">{chat.lastMessage}</p>
                           </div>
-                          <p className="m-0 text-muted text-truncate">{chat.lastMessage}</p>
+
+                          <div className="d-flex flex-column align-items-end ms-2">
+                            <small className="text-muted text-nowrap">{displayTime}</small>
+                            {chat.unreadCount > 0 && (
+                              <span className="badge bg-success rounded-circle mt-1">
+                                  {chat.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          
                         </div>
                       </div>
                     );
@@ -172,7 +185,7 @@ function Sidebar({ isLoading, searchInput, setSearchInput,searchedUsers,isSearch
                         <div
                           key={user._id}
                           className={`d-flex align-items-center chat-item mb-3 ${selectedUserId === user._id ? "active-chat" : ""}`}
-                          onClick={() => dispatch(setSelectedUser({ id: user._id, name: user.name, profilePic: user.profilePic }))}
+                          onClick={() => dispatch(setSelectedUser({ id: user._id, name: user.name, profilePic: user.profilePic,unreadCount: user.unreadCount }))}
                         >
                           <div className="position-relative me-3">
                             <img src={user.profilePic ? `http://localhost:3000/uploads/profilePics/${user.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />

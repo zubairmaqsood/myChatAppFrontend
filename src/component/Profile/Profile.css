@@ -37,3 +37,8 @@ input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
     display: none;
 }
+
+.confirmModal{
+    min-width: 300px;
+    max-width: 80%
+}

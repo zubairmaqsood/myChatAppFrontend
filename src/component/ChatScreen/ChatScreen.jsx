@@ -10,32 +10,29 @@ import "./ChatScreen.css";
 function ChatScreen({setSearchInput}) {
   const textareaRef = useRef(null);
   const messageEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const prevMsgCount = useRef(0);
+  
+  // -------- Use States --------
+  
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [unreadScrollCount, setUnreadScrollCount] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showNoPicMsg, setShowNoPicMsg] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // ------- Use Selectors -------
 
   const selectedUser = useSelector((state) => state.chat.selectedUser);
-  const chatMessages = useSelector(
-    (state) => state.message.chatCache[selectedUser?.id],
-  );
+  const chatMessages = useSelector((state) => state.message.chatCache[selectedUser?.id]);
   const onlineUsers = useSelector((state) => state.chat.onlineUsers);
   const isOnline = onlineUsers.includes(selectedUser.id);
   const dispatch = useDispatch();
 
-  const fetchMessages = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await getMessages(selectedUser?.id);
-      dispatch(setMessages({ selectedUserId: selectedUser?.id, response }));
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ------ Use Effects ------
 
   useEffect(() => {
     if (!selectedUser.id) return; // at initial load when first component renders then it will return
@@ -51,16 +48,80 @@ function ChatScreen({setSearchInput}) {
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
-  }, [isLoading]);
+  }, [isLoading,selectedUser?.id]);
 
   useEffect(() => {
     const scrollToBottom = () => {
-      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      // Adding a small setTimeout ensures the DOM has actually painted 
+      // the new message to the screen before we try to scroll to it!
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 50);
     };
     scrollToBottom();
-  }, [isLoading]);
+  }, [isLoading, selectedUser?.id]);
 
-  // 2. This function makes the box grow dynamically as you type
+  // The SMART Auto-Scroll Logic
+  useEffect(() => {
+    if (!chatMessages) return;
+
+    const isNewMessageAdded = chatMessages.length > prevMsgCount.current;
+    const lastMsg = chatMessages[chatMessages.length - 1];
+
+    if (isNewMessageAdded && lastMsg) {
+        setSearchInput("");
+        if (lastMsg.fromSelf || isAtBottom) {
+            // SCENARIO A: We sent it, or we are already at the bottom. Force scroll!
+            setTimeout(() => {
+                messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 50);
+        } else {
+            // SCENARIO B: We are reading old messages! Don't scroll, just increment badge.
+            setUnreadScrollCount(prev => prev + 1);
+        }
+    }
+
+    // Always update our ref so we know for next time
+    prevMsgCount.current = chatMessages.length;
+  }, [chatMessages, isAtBottom]);
+
+  // 4. Reset states when switching users
+  useEffect(() => {
+      setUnreadScrollCount(0);
+      setIsAtBottom(true);
+  }, [selectedUser?.id])
+
+
+  // ------  Functions -------
+
+ const fetchMessages = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await getMessages(selectedUser?.id);
+      dispatch(setMessages({ selectedUserId: selectedUser?.id, response }));
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  //  Scroll Listener
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    
+    // If we are within 100px of the bottom, we consider it "at the bottom"
+    const isBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setIsAtBottom(isBottom);
+
+    // If the user manually scrolls back to the bottom, clear the local badge!
+    if (isBottom) setUnreadScrollCount(0);
+  };
+
+  //This function makes the box grow dynamically as you type
   const handleInput = (e) => {
     const textarea = e.target;
     textarea.style.height = "auto"; // Reset height momentarily
@@ -133,30 +194,23 @@ function ChatScreen({setSearchInput}) {
 
   // to delete all messages of current user with selected user
   const handleDeleteChat = async () => {
-    // Built-in browser confirmation box
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this entire conversation? This cannot be undone.",
-    );
+    setShowDeleteModal(true);
+  };
 
-    if (!confirmDelete) return;
-    console.log(selectedUser.id)
+  const executeDeleteChat = async () => {
+    setShowDeleteModal(false);
     try {
       setIsDeleting(true);
-
-      // 1. Wipe the database
-      await deleteMessages(selectedUser.id)
-
-      dispatch(removeMessages(selectedUser.id))
-      // 2. Instantly update Redux (removes sidebar item & closes chat screen)
+      await deleteMessages(selectedUser.id);
+      dispatch(removeMessages(selectedUser.id));
       dispatch(removeChat(selectedUser.id));
-
     } catch (error) {
       console.error("Failed to delete chat", error);
     } finally {
       setIsDeleting(false);
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center h-100">
@@ -210,12 +264,29 @@ function ChatScreen({setSearchInput}) {
               }
               alt="userpic"
               className="rounded-circle object-fit-cover profilePic"
+              style={{cursor: selectedUser?.profilePic ? "pointer" : "default"}}
               //i need to check whether profile pic is uploaded or not if not then don't show preview
-              onClick={() => setIsPreviewOpen(true)}
+              onClick={() => {
+                if (selectedUser?.profilePic) {
+                  setIsPreviewOpen(true);
+                } else {
+                  // Show the tiny span, then hide it after 2 seconds!
+                  setShowNoPicMsg(true);
+                  setTimeout(() => setShowNoPicMsg(false), 2000);
+                }
+              }}
               onError={(e) => (e.target.src = "/default.webp")}
             />
             {isOnline && (
               <span className="position-absolute bottom-0 end-0 p-2 bg-secondary bg-success border border-2 border-white rounded-circle"></span>
+            )}
+
+            {showNoPicMsg && (
+                <span 
+                    className="position-absolute bg-dark text-white rounded shadow-sm px-2 py-1 profilePicErr"
+                >
+                    No profile photo
+                </span>
             )}
           </div>
 
@@ -248,28 +319,57 @@ function ChatScreen({setSearchInput}) {
       </div>
 
       {/* 2. Chat Messages Area ) */}
-      <div className="flex-grow-1 overflow-auto pt-3 bg-white d-flex flex-column gap-4">
-        {chatMessages &&
-          chatMessages.map((message) => {
-            const displayTime = formatTime(message.time);
-            return (
-              <div
-                key={message._id}
-                className={`d-flex ${message.fromSelf ? "justify-content-end pe-2" : "justify-content-start ps-2"} mb-3 message-slide`}
-              >
-                <div
-                  className={`${message.fromSelf ? "chat-send" : "chat-recieved"} message d-flex flex-column px-3 py-2`}
-                >
-                  <span className="text-break">{message.message}</span>
-                  <span className="align-self-end text-muted mt-1 messageDate">
-                    {displayTime}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+      <div className="flex-grow-1 position-relative d-flex flex-column overflow-hidden bg-white">
+        
+        <div ref={chatContainerRef} 
+          onScroll={handleScroll}
+          className="flex-grow-1 overflow-auto pt-3 px-3 bg-white d-flex flex-column gap-4">
 
-        <div ref={messageEndRef}></div>
+          <div className="flex-grow-1"></div>
+          
+          {chatMessages &&
+            chatMessages.map((message) => {
+              const displayTime = formatTime(message.time);
+              return (
+                <div
+                  key={message._id}
+                  
+                  className={`d-flex ${message.fromSelf ? "justify-content-end pe-5" : "justify-content-start ps-2"} mb-3 message-slide`}
+                >
+                  <div
+                    className={`${message.fromSelf ? "chat-send" : "chat-recieved"} message d-flex flex-column px-3 py-2`}
+                  >
+                    <span className="text-break">{message.message}</span>
+                    <span className="align-self-end text-muted mt-1 messageDate">
+                      {displayTime}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
+          <div ref={messageEndRef}></div>
+        
+        </div>
+
+        {!isAtBottom && (
+              <button 
+                  onClick={() => {
+                      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                      setUnreadScrollCount(0);
+                  }}
+                  className="btn btn-light rounded-circle shadow position-absolute d-flex justify-content-center align-items-center scrollBtn"
+              >
+                  <i className="bi bi-chevron-down fs-5 text-muted"></i>
+                  
+                  {/* The little green badge on the button */}
+                  {unreadScrollCount > 0 && (
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success countBadge">
+                          {unreadScrollCount}
+                      </span>
+                  )}
+              </button>
+        )}
       </div>
 
       {/* 3. Input Area */}
@@ -313,6 +413,24 @@ function ChatScreen({setSearchInput}) {
           />
         </div>
       )}
+
+      {/* Custom Delete Chat Modal */}
+      {showDeleteModal && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+          <div className="bg-white rounded-3 shadow p-4 text-center deleteModal">
+            <div className="text-danger mb-3">
+              <i className="bi bi-exclamation-triangle fs-1"></i>
+            </div>
+            <h5 className="mb-2">Delete Chat?</h5>
+            <p className="text-muted mb-4">Are you sure you want to delete this entire conversation? This cannot be undone.</p>
+            <div className="d-flex justify-content-center gap-3">
+              <button className="btn btn-light px-4" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button className="btn btn-danger px-4" onClick={executeDeleteChat}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
