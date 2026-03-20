@@ -140,7 +140,7 @@ function Sidebar({ isLoading, searchInput, setSearchInput,searchedUsers,isSearch
                         }}
                       >
                         <div className="position-relative me-3">
-                          <img src={chat.profilePic ? `http://localhost:3000/uploads/profilePics/${chat.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />
+                          <img src={chat.profilePic ? `${import.meta.env.VITE_BACKEND_URL}/uploads/profilePics/${chat.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />
                           {isOnline && <span className="position-absolute bottom-0 end-0 p-2 bg-secondary bg-success border border-2 border-white rounded-circle"></span>}
                         </div>
                         <div className="d-flex flex-grow-1 justify-content-between overflow-hidden">
@@ -188,7 +188,7 @@ function Sidebar({ isLoading, searchInput, setSearchInput,searchedUsers,isSearch
                           onClick={() => dispatch(setSelectedUser({ id: user._id, name: user.name, profilePic: user.profilePic,unreadCount: user.unreadCount }))}
                         >
                           <div className="position-relative me-3">
-                            <img src={user.profilePic ? `http://localhost:3000/uploads/profilePics/${user.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />
+                            <img src={user.profilePic ? `${import.meta.env.VITE_BACKEND_URL}/uploads/profilePics/${user.profilePic}` : "/default.webp"} alt="dp" className="rounded-circle object-fit-cover profilePic" onError={(e) => (e.target.src = "/default.webp")} />
                             {isOnline && <span className="position-absolute bottom-0 end-0 p-2 bg-secondary bg-success border border-2 border-white rounded-circle"></span>}
                           </div>
                           <div className="d-flex flex-column flex-grow-1 overflow-hidden">
