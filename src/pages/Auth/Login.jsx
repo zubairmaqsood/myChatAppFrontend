@@ -25,7 +25,7 @@ function Login() {
       // Redirect to your Chat Dashboard
       navigate('/'); 
     } catch (err) {
-      setApiError(err);
+      setApiError(err.message);
     }
   };
 

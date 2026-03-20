@@ -25,7 +25,7 @@ function Signup() {
       
       navigate('/'); 
     } catch (err) {
-      setApiError(err.response?.data?.message || "Something went wrong during signup.");
+      setApiError(err.message || "Something went wrong during signup.");
     }
   };
 
