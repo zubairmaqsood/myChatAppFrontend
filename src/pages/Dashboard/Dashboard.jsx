@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "../../hooks/useDebounce";
-import { setChats } from "../../Redux/slices/chatSlice";
+import { setChats,setSelectedUser } from "../../Redux/slices/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import getChats from "../../services/chatService";
 import { searchUsers } from "../../services/userService";
@@ -62,6 +62,27 @@ function Dashboard() {
     fetchSearchedUsers()
   }, [debouncedSearch]);
 
+  // --- HARDWARE BACK BUTTON INTERCEPTOR ---
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    // 1. When a chat opens, push a "fake" page into the phone's history
+    window.history.pushState({ isChatOpen: true }, "");
+
+    // 2. Listen for the user pressing the physical back button
+    const handlePopState = () => {
+      // Instead of leaving the website, just clear the chat!
+      dispatch(setSelectedUser(null));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [selectedUserId, dispatch]);
+
+
   if (error) {
     return (
       <div className="vh-100 vw-100 d-flex justify-content-center align-items-center bg-light">
@@ -80,11 +101,11 @@ function Dashboard() {
   }
 
   return (
-    <div className="container-fluid vh-100">
-      <div className="row">
+    <div className="container-fluid h-100">
+      <div className="row h-100">
         {/* Sidebar */}
         <div
-          className={`col-md-4 bg-light vh-100 overflow-auto border-end p-0 ${selectedUserId ? "d-none d-md-block" : "d-block"}`}
+          className={`col-md-4 bg-light h-100 overflow-auto border-end p-0 ${selectedUserId ? "d-none d-md-block" : "d-block"}`}
         >
           <Sidebar
             isLoading={isLoading}
@@ -97,7 +118,7 @@ function Dashboard() {
 
         {/* Chat Area */}
         <div
-          className={`col-md-8 vh-100 border-end p-0 ${selectedUserId ? "d-block" : "d-none d-md-block"}`}
+          className={`col-md-8 h-100 border-end p-0 ${selectedUserId ? "d-block" : "d-none d-md-block"}`}
         >
           {selectedUserId ? (
             <ChatScreen setSearchInput={setSearchInput}/>

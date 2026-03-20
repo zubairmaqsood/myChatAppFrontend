@@ -1,0 +1,7 @@
+body, html, #root {
+  height: 100dvh; /* dynamic height perfectly calculates mobile address bars */
+  width: 100vw;
+  overflow: hidden; /* Kills the phantom whole-page bounce */
+  margin: 0;
+  padding: 0;
+}

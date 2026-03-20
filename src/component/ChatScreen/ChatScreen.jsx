@@ -249,7 +249,12 @@ function ChatScreen({setSearchInput}) {
         <div className={"d-flex align-items-center"}>
           <button
             className="btn btn-light border-0 d-md-none me-2 p-1"
-            onClick={() => dispatch(setSelectedUser(null))}
+            onClick={() => {
+              dispatch(setSelectedUser(null))
+              if (window.history.state?.isChatOpen) {
+                  window.history.back();
+              }
+            }}
           >
             <i className="bi bi-arrow-left fs-5"></i>
           </button>

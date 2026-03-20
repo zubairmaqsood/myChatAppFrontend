@@ -6,7 +6,7 @@ export const login = async(data)=>{
         return response.data
     }catch (err) {
         // Extract the specific message from the backend
-        const errorMessage = err.response?.data?.message || "Something went wrong";
+        const errorMessage = err?.response?.data?.message || "Something went wrong";
         throw new Error(errorMessage); 
     }
 }

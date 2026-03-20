@@ -1,5 +1,6 @@
 import { createBrowserRouter,RouterProvider } from 'react-router' 
 import { useEffect,useState } from 'react'
+import "./App.css"
 import Dashboard from './pages/Dashboard/Dashboard'
 import Login from "./pages/Auth/Login"
 import Signup from "./pages/Auth/Signup"
