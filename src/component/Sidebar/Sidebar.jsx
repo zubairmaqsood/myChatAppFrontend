@@ -114,7 +114,7 @@ function Sidebar({ isLoading, searchInput, setSearchInput,searchedUsers,isSearch
         </div>
 
         {/* Chat List */}
-        <div className="d-flex flex-column p-3 gap-4">
+        <div className="d-flex flex-column p-3 overflow-y-auto gap-4">
           {/* When data is fetching then show loader */}
           {isLoading ? (
             <div className="d-flex justify-content-center py-5">
