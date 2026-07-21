@@ -10,12 +10,15 @@ function Login() {
   const dispatch = useDispatch()
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
       setApiError(null);
+      setIsLoading(true);
       // Calls your Express backend
       const response = await login(data);
       
@@ -26,6 +29,8 @@ function Login() {
       navigate('/'); 
     } catch (err) {
       setApiError(err.message);
+    }finally {
+      setIsLoading(false); //  Set loading to false when request finishes (success or fail) 
     }
   };
 
@@ -60,7 +65,13 @@ function Login() {
             {errors.password && <small className="text-danger">{errors.password.message}</small>}
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">Login</button>
+          <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
+            {isLoading ? (
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            ) : (
+              "Login"
+            )}
+          </button>
         </form>
 
         <div className="text-center mt-3">

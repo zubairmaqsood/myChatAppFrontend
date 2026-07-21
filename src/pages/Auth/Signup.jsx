@@ -8,6 +8,8 @@ import { signup } from '../../services/authService';
 function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [apiError, setApiError] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
@@ -16,6 +18,7 @@ function Signup() {
   const onSubmit = async (data) => {
     try {
       setApiError(null);
+      setIsLoading(true);
       // Calls your Express backend
       const response = await signup(data)
       
@@ -26,6 +29,8 @@ function Signup() {
       navigate('/'); 
     } catch (err) {
       setApiError(err.message || "Something went wrong during signup.");
+    }finally {
+      setIsLoading(false); // Set loading to false 
     }
   };
 
@@ -70,7 +75,13 @@ function Signup() {
             {errors.password && <small className="text-danger">{errors.password.message}</small>}
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">Sign Up</button>
+          <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
+            {isLoading ? (
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            ) : (
+              "Sign Up"
+            )}
+          </button>
         </form>
 
         <div className="text-center mt-3">
