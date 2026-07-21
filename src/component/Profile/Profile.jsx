@@ -86,6 +86,7 @@ function Profile({ onClose }) {
       alert("Failed to upload image. Please try again.");
     } finally {
       setIsUploading(false);
+      e.target.value = null;
     }
   };
 
@@ -159,7 +160,9 @@ function Profile({ onClose }) {
              </div>
           )}
 
-          {/* Hidden File Input */}
+        </div>
+
+         {/* Hidden File Input */}
           <input
             type="file"
             accept="image/*"
@@ -167,7 +170,6 @@ function Profile({ onClose }) {
             className="d-none"
             onChange={handleImageChange}
           />
-        </div>
       </div>
 
      {/* Name Section */}
