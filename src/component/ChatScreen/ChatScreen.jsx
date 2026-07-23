@@ -410,7 +410,7 @@ function ChatScreen({setSearchInput}) {
         >
           {/* The large preview image */}
           <img
-            src={`${import.meta.env.VITE_BACKEND_URL}/uploads/profilePics/${selectedUser.profilePic}`}
+            src={selectedUser.profilePic}
             alt="dp-large"
             className="rounded-circle shadow-lg dpPreview"
             // Prevent clicking the image from closing the overlay (optional, but good practice)
