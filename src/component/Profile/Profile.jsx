@@ -127,7 +127,7 @@ function Profile({ onClose }) {
         <div className="position-relative profilePicContainer mb-3" onClick={() => fileInputRef.current.click()}>
           
           <img
-            src={user?.profilePic ? `${import.meta.env.VITE_BACKEND_URL}/uploads/profilePics/${user.profilePic}` : "/default.webp"}
+            src={user?.profilePic ? user.profilePic : "/default.webp"}
             alt="profile"
             className={`rounded-circle object-fit-cover w-100 h-100 shadow ${isUploading ? "opacity-50" : ""}`}
             onError={(e) => (e.target.src = "/default.webp")}

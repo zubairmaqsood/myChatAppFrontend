@@ -264,7 +264,7 @@ function ChatScreen({setSearchInput}) {
             <img
               src={
                 selectedUser?.profilePic
-                  ? `${import.meta.env.VITE_BACKEND_URL}/uploads/profilePics/${selectedUser.profilePic}`
+                  ? selectedUser.profilePic
                   : "/default.webp"
               }
               alt="userpic"
